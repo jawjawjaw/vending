@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "vending"
+version = "0.1.0"
+description = ""
+authors = ["Lukasz Jaworowski <jaworowski00@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+fastapi = "^0.109.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

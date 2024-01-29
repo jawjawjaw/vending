@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import Optional
 
 from pydantic import BaseModel
 
@@ -23,7 +24,7 @@ class UserCreateRequest(BaseRequest):
     role: UserRole
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {"username": "alice", "password": "alice123", "role": "buyer"}
         }
 
@@ -32,4 +33,20 @@ class UserUpdateRequest(BaseRequest):
     password: str
 
     class Config:
-        schema_extra = {"example": {"password": "alice123"}}
+        json_schema_extra = {"example": {"password": "alice123"}}
+
+
+class ProductCreate(BaseModel):
+    amount_available: int
+    cost: int
+    product_name: str
+
+
+class ProductUpdate(BaseModel):
+    amount_available: Optional[int]
+    cost: Optional[int]
+    product_name: Optional[str]
+
+
+class ProductRead(ProductCreate):
+    id: str

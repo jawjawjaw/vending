@@ -20,18 +20,23 @@ from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import DeclarativeBase, relationship
 
 
+import uuid
+from sqlalchemy import Column, String, DateTime
+from sqlalchemy.dialects.postgresql import UUID
+
+
 class Base(DeclarativeBase):
     pass
 
 
 class BaseWithTimestamps(Base):
-    __abstract__ = True  # This ensures this base class is not mapped to a table
+    __abstract__ = True
     id = Column(
-        String(36),
+        UUID(as_uuid=True),
+        default=uuid.uuid4,
         primary_key=True,
-        default=str(uuid.uuid4()),
-        nullable=False,
         unique=True,
+        nullable=False,
     )
 
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
@@ -55,11 +60,11 @@ class User(BaseWithTimestamps):
 class Product(BaseWithTimestamps):
     __tablename__ = "products"
 
-    product_available = Column(Integer, nullable=False)
+    amount_available = Column(Integer, nullable=False)
     cost = Column(Integer, nullable=False)
-    product_name = Column(String(32), nullable=False)
+    product_name = Column(String(64), nullable=False)
     # seller_id is foreign key to Users table
-    seller_id = Column(String(32), ForeignKey("users.id"), nullable=False)
+    seller_id = Column(UUID, ForeignKey("users.id"), nullable=False)
 
     # Define a relationship to the User model
     seller = relationship("User", back_populates="products")

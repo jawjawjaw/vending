@@ -1,8 +1,8 @@
 """init
 
-Revision ID: 918fa918ba72
+Revision ID: 65bf86b7c644
 Revises: 
-Create Date: 2024-01-29 13:42:14.438054
+Create Date: 2024-01-29 16:56:38.546004
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = "918fa918ba72"
+revision = "65bf86b7c644"
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -24,7 +24,7 @@ def upgrade():
         sa.Column("password", sa.String(length=128), nullable=False),
         sa.Column("deposit", sa.Integer(), nullable=False),
         sa.Column("role", sa.String(length=32), nullable=False),
-        sa.Column("id", sa.String(length=36), nullable=False),
+        sa.Column("id", sa.UUID(), nullable=False),
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.Column("updated_at", sa.DateTime(), nullable=False),
         sa.PrimaryKeyConstraint("username", "id"),
@@ -33,11 +33,11 @@ def upgrade():
     op.create_index(op.f("ix_users_username"), "users", ["username"], unique=True)
     op.create_table(
         "products",
-        sa.Column("amountAvailable", sa.Integer(), nullable=False),
+        sa.Column("amount_available", sa.Integer(), nullable=False),
         sa.Column("cost", sa.Integer(), nullable=False),
-        sa.Column("productName", sa.String(length=32), nullable=False),
-        sa.Column("seller_id", sa.String(length=32), nullable=False),
-        sa.Column("id", sa.String(length=36), nullable=False),
+        sa.Column("product_name", sa.String(length=64), nullable=False),
+        sa.Column("seller_id", sa.UUID(), nullable=False),
+        sa.Column("id", sa.UUID(), nullable=False),
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.Column("updated_at", sa.DateTime(), nullable=False),
         sa.ForeignKeyConstraint(

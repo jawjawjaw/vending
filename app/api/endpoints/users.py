@@ -16,7 +16,7 @@ async def read_current_user(
     current_user: User = Depends(deps.get_current_user),
 ):
     """Get current user"""
-    return current_user
+    return UserResponse.model_validate(current_user)
 
 
 @router.delete("", status_code=204)
@@ -62,4 +62,5 @@ async def register_new_user(
     )
     session.add(user)
     await session.commit()
-    return user
+
+    return UserResponse.model_validate(user)

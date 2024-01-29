@@ -40,7 +40,9 @@ class SQLProductRepository:
 
     async def get_all_products(self) -> List[ProductRead]:
         products = await self.db_session.execute(select(Product))
-        return [ProductRead(model_validate=product) for product in products.all()]
+        return [
+            ProductRead.model_validate(product) for product in products.scalars().all()
+        ]
 
     async def get_product_by_id(self, product_id: int) -> Optional[ProductRead]:
         product = await self.db_session.execute(
@@ -48,7 +50,7 @@ class SQLProductRepository:
         )
         product = product.scalar_one_or_none()
         if product:
-            return ProductRead(model_validate=product)
+            return ProductRead.model_validate(product)
         return None
 
     async def create_product(self, product_create: ProductCreate) -> ProductRead:
@@ -65,10 +67,10 @@ class SQLProductRepository:
         )
         existing_product = existing_product.scalar_one_or_none()
         if existing_product:
-            for key, value in product_update.dict().items():
+            for key, value in product_update.model_dump().items():
                 setattr(existing_product, key, value)
             await self.db_session.commit()
-            return ProductRead(model_validate=existing_product)
+            return ProductRead.model_validate(existing_product)
         return None
 
     async def delete_product(self, product_id: int) -> Optional[ProductRead]:
@@ -77,9 +79,10 @@ class SQLProductRepository:
         )
         existing_product = existing_product.scalar_one_or_none()
         if existing_product:
-            self.db_session.delete(existing_product)
+            await self.db_session.delete(existing_product)
             await self.db_session.commit()
-            return ProductRead(model_validate=existing_product)
+            return ProductRead.model_validate(existing_product)
+
         return None
 
 

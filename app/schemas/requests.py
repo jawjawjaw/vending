@@ -2,7 +2,7 @@ from enum import Enum
 from typing import Optional
 from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 
 from app.users.models import AVAILABLE_COINS
 
@@ -56,12 +56,13 @@ class ProductRead(ProductCreate):
 
 
 class DepositRequest(BaseModel):
-    amount: int
-    # add validation to all available coins - make sure amount is 5, 10, 20, 50 and 100 cent coins into their vending machine account (one coin at the time)
+    coin: int
 
-    def validate_amount(amount):
-        if amount in AVAILABLE_COINS:
-            return amount
+    # add validation to all available coins - make sure amount is 5, 10, 20, 50 and 100 cent coins into their vending machine account (one coin at the time)
+    @validator("coin", pre=True)
+    def validate_coin(coin):
+        if coin in AVAILABLE_COINS:
+            return coin
         else:
             raise ValueError("Invalid coin amount")
 
@@ -69,3 +70,4 @@ class DepositRequest(BaseModel):
 class BuyProductRequest(BaseModel):
     product_id: UUID
     amount: int
+

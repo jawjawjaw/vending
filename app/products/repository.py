@@ -7,6 +7,7 @@ from sqlalchemy import select
 
 from app.db.sql.models import Product
 from app.db.sql.session import get_session
+from app.errors import NotEnoughProductError, ProductNotFoundError
 from app.products.models import ProductCreate, ProductRead, ProductUpdate
 
 
@@ -20,6 +21,10 @@ class ProductRepository(ABC):
         pass
 
     @abstractmethod
+    async def get_product_for_update(self, product_id: int) -> Optional[ProductRead]:
+        pass
+
+    @abstractmethod
     async def create_product(self, product: ProductCreate) -> ProductRead:
         pass
 
@@ -30,7 +35,11 @@ class ProductRepository(ABC):
         pass
 
     @abstractmethod
-    def delete_product(self, product_id: int) -> Optional[ProductRead]:
+    async def delete_product(self, product_id: int) -> Optional[ProductRead]:
+        pass
+
+    @abstractmethod
+    async def buy_product(self, product_id: int, amount: int) -> Optional[ProductRead]:
         pass
 
 
@@ -63,7 +72,7 @@ class SQLProductRepository:
         self, product_id: int, product_update: ProductUpdate
     ) -> Optional[ProductRead]:
         existing_product = await self.db_session.execute(
-            select(Product).filter_by(id=product_id)
+            select(Product).filter_by(id=product_id).with_for_update()
         )
         existing_product = existing_product.scalar_one_or_none()
         if existing_product:
@@ -84,6 +93,29 @@ class SQLProductRepository:
             return ProductRead.model_validate(existing_product)
 
         return None
+
+    async def get_product_for_update(self, product_id: int) -> Optional[ProductRead]:
+        product = await self.db_session.execute(
+            select(Product).filter_by(id=product_id).with_for_update()
+        )
+        product = product.scalar_one_or_none()
+        if product:
+            return ProductRead.model_validate(product)
+        return None
+
+    async def buy_product(self, product_id: int, amount: int) -> Optional[ProductRead]:
+        product = await self.db_session.execute(
+            select(Product).filter_by(id=product_id).with_for_update()
+        )
+        product = product.scalar_one_or_none()
+        if product:
+            product.amount_available -= amount
+            if product.amount_available < 0:
+                await self.db_session.rollback()
+                return NotEnoughProductError()
+            await self.db_session.commit()
+            return ProductRead.model_validate(product)
+        raise ProductNotFoundError()
 
 
 async def get_product_repository(session=Depends(get_session)) -> ProductRepository:

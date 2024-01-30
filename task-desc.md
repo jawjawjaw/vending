@@ -9,12 +9,12 @@ Design an API for a vending machine, allowing users with a “seller” role to 
 - Implement user model with username, password, deposit and role fields [X]
 - Implement an authentication method (basic, oAuth, JWT or something else, the choice is yours) [X] 
 - All of the endpoints should be authenticated unless stated otherwise [X]
-- Implement CRUD for users (POST /user should not require authentication to allow new user registration)[ ] - missing update
-- Implement CRUD for a product model (GET can be called by anyone, while POST, PUT and DELETE can be called only by the seller user who created the product)
-- Implement /deposit endpoint so users with a “buyer” role can deposit only 5, 10, 20, 50 and 100 cent coins into their vending machine account (one coin at the time)
-- Implement /buy endpoint (accepts productId, amount of products) so users with a “buyer” role can buy a product (shouldn't be able to buy multiple different products at the same time) with the money they’ve deposited. API should return total they’ve spent, the product they’ve purchased and their change if there’s any (in an array of 5, 10, 20, 50 and 100 cent coins)
-- Implement /reset endpoint so users with a “buyer” role can reset their deposit back to 0
-- Take time to think about possible edge cases and access issues that should be solved
+- Implement CRUD for users (POST /user should not require authentication to allow new user registration)[X] -Update only password - do not allow changing roles
+- Implement CRUD for a product model (GET can be called by anyone, while POST, PUT and DELETE can be called only by the seller user who created the product)[X]
+- Implement /deposit endpoint so users with a “buyer” role can deposit only 5, 10, 20, 50 and 100 cent coins into their vending machine account (one coin at the time)[X]
+- Implement /buy endpoint (accepts productId, amount of products) so users with a “buyer” role can buy a product (shouldn't be able to buy multiple different products at the same time) with the money they’ve deposited. API should return total they’ve spent, the product they’ve purchased and their change if there’s any (in an array of 5, 10, 20, 50 and 100 cent coins)[X]
+- Implement /reset endpoint so users with a “buyer” role can reset their deposit back to 0 [X]
+- Take time to think about possible edge cases and access issues that should be solved [X]
 
 **Evaluation criteria:**
 
@@ -31,3 +31,5 @@ Design an API for a vending machine, allowing users with a “seller” role to 
 ## Deliverables
 
 A Github repository with public access. Please have the solution running and a Postman / Swagger collection ready on your computer so the domain expert can tell you which tests to run on the API.
+
+

@@ -9,13 +9,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core import config, security
 from app.db.sql.models import User
 from app.db.sql.session import get_session
+from app.users.models import UserReadFull
 
 reusable_oauth2 = OAuth2PasswordBearer(tokenUrl="auth/access-token")
 
 
 async def get_current_user(
     session: AsyncSession = Depends(get_session), token: str = Depends(reusable_oauth2)
-) -> User:
+) -> UserReadFull:
     try:
         payload = jwt.decode(
             token, config.settings.SECRET_KEY, algorithms=[security.JWT_ALGORITHM]
@@ -41,8 +42,8 @@ async def get_current_user(
         )
 
     result = await session.execute(select(User).where(User.id == token_data.sub))
-    user = result.scalars().one()
+    user = result.scalar_one()
 
     if not user:
         raise HTTPException(status_code=404, detail="User not found.")
-    return user
+    return UserReadFull.model_validate(user)

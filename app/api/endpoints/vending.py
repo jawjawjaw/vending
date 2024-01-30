@@ -1,7 +1,20 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
+from app.api.auth import get_current_user
+from app.db.sql.models import User
+from app.errors import (
+    InvalidRoleError,
+    NotEnoughChangeError,
+    NotEnoughMoneyError,
+    NotEnoughProductError,
+    ProductNotFoundError,
+    UserNotFoundError,
+)
 
 from app.schemas.requests import BuyProductRequest, DepositRequest
-from app.vending import VendingService, get_vending_service
+from app.users.models import UserDeposit, UserRead, UserReadFull
+from app.vending.service import VendingService, get_vending_service
+
+from app.vending.models import BuyProduct
 
 # Create a FastAPI router for vending machine operations
 router = APIRouter()
@@ -9,34 +22,66 @@ router = APIRouter()
 # Define a list of available coin values
 
 
-# Endpoint for depositing coins
-@router.post("/deposit", tags=["Vending Machine"])
+@router.post(
+    "/deposit",
+)
 async def deposit_coins(
     request: DepositRequest,
+    current_user: UserRead = Depends(get_current_user),
     vending_service: VendingService = Depends(get_vending_service),
-): 
-    resp = vending_service.deposit_coins(request)
-    # You can process the deposit operation here
-    # For example, update the user's account balance with the deposited coins
-    return {"message": f"Deposited {request.amount} cents"}
+):
+    req = UserDeposit(
+        coin=request.coin,
+        user_id=current_user.id,
+    )
+    try:
+        resp = await vending_service.deposit_coins(req)
+    except InvalidRoleError as e:
+        return HTTPException(status_code=400, detail=str(e))
+
+    return resp
 
 
-# Endpoint for buying a product
-@router.post("/buy", tags=["Vending Machine"])
+@router.post(
+    "/buy",
+)
 async def buy_product(
     request: BuyProductRequest,
+    current_user: UserRead = Depends(get_current_user),
     vending_service: VendingService = Depends(get_vending_service),
 ):
-    # You can process the buy operation here
-    # For example, deduct the cost of the product from the user's balance
-    return {"message": f"Bought product with ID {request.product_id}"}
+    try:
+        req = BuyProduct(
+            product_id=request.product_id,
+            amount=request.amount,
+            user_id=current_user.id,
+        )
+        res = await vending_service.buy_product(req)
+    except (
+        UserNotFoundError,
+        ProductNotFoundError,
+        NotEnoughProductError,
+        NotEnoughMoneyError,
+        NotEnoughChangeError
+    ) as e:
+        return HTTPException(status_code=400, detail=str(e))
+
+    except Exception as e:
+        return HTTPException(status_code=500, detail="Internal Server Error")
+
+    return res
 
 
-# Endpoint for resetting the vending machine
-@router.post("/reset", tags=["Vending Machine"])
-async def reset_vending_machine(
-    vending_service: VendingService = Depends(get_vending_service)
+@router.post(
+    "/reset",
+)
+async def reset_user_deposit(
+    vending_service: VendingService = Depends(get_vending_service),
+    current_user: UserRead = Depends(get_current_user),
 ):
-    # Implement the reset operation here
-    # For example, reset all balances and product counts
-    return {"message": "Vending machine reset successfully"}
+    try:
+        await vending_service.reset_user_deposit(current_user.id)
+    except ValueError as e:
+        return HTTPException(status_code=400, detail=str(e))
+
+    return {"message": "success"}

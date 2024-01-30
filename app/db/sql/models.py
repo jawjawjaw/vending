@@ -16,7 +16,7 @@ alembic upgrade head
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
+from sqlalchemy import JSON, Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import DeclarativeBase, relationship
 
 
@@ -54,7 +54,15 @@ class User(BaseWithTimestamps):
     password = Column(String(128), nullable=False)
     deposit = Column(Integer, nullable=False, default=0)
     role = Column(String(32), nullable=False)
+    vending_id = Column(
+        UUID,
+        ForeignKey("vending_machines.id"),
+        nullable=False,
+        default=uuid.UUID("00000000-0000-0000-0000-000000000000"),
+    )
+
     products = relationship("Product", back_populates="seller")
+    vending = relationship("VendingMachine", back_populates="users")
 
 
 class Product(BaseWithTimestamps):
@@ -65,6 +73,21 @@ class Product(BaseWithTimestamps):
     product_name = Column(String(64), nullable=False)
     # seller_id is foreign key to Users table
     seller_id = Column(UUID, ForeignKey("users.id"), nullable=False)
-
     # Define a relationship to the User model
     seller = relationship("User", back_populates="products")
+
+    vending_id = Column(
+        UUID,
+        ForeignKey("vending_machines.id"),
+        nullable=False,
+        default=uuid.UUID("00000000-0000-0000-0000-000000000000"),
+    )
+    vending = relationship("VendingMachine", back_populates="products")
+
+
+class VendingMachine(BaseWithTimestamps):
+    __tablename__ = "vending_machines"
+    # json field
+    status = Column(JSON, nullable=False)
+    products = relationship("Product", back_populates="vending")
+    users = relationship("User", back_populates="vending")

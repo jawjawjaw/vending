@@ -44,6 +44,7 @@ class Settings(BaseSettings):
     BACKEND_CORS_ORIGINS: list[AnyHttpUrl] = []
     ALLOWED_HOSTS: list[str] = ["localhost", "127.0.0.1"]
 
+    LOGLEVEL: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "DEBUG"
     # PROJECT NAME, VERSION AND DESCRIPTION
     PROJECT_NAME: str = PYPROJECT_CONTENT["name"]
     VERSION: str = PYPROJECT_CONTENT["version"]
@@ -55,6 +56,9 @@ class Settings(BaseSettings):
     DATABASE_PASSWORD: str
     DATABASE_PORT: int
     DATABASE_DB: str
+
+    # VENDING MACHINE ID
+    VENDING_MACHINE_ID: str
 
     @computed_field
     @cached_property

@@ -38,10 +38,8 @@ class VendingService:
         resp = await self.user_repository.deposit_coins(request)
 
         log.info(f"Deposited {request.coin} for user {request.user_id}")
-        try:
-            current = await self.vending_machine.add_coin(request.coin)
-        except NotEnoughChangeError:
-            raise NotEnoughChangeError()
+        current = await self.vending_machine.add_coin(request.coin)
+
 
         log.info(f"Current coins in vending machine: {current}")
 

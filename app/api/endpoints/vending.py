@@ -12,8 +12,8 @@ from app.errors import (
 
 from app.schemas.requests import BuyProductRequest, DepositRequest
 from app.users.models import UserDeposit, UserRead, UserReadFull
-from app.vending.service import VendingService, get_vending_service
 
+from app.api.deps import get_vending_service, VendingService
 from app.vending.models import BuyProduct
 
 # Create a FastAPI router for vending machine operations
@@ -37,7 +37,7 @@ async def deposit_coins(
     try:
         resp = await vending_service.deposit_coins(req)
     except InvalidRoleError as e:
-        return HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e))
 
     return resp
 
@@ -62,12 +62,12 @@ async def buy_product(
         ProductNotFoundError,
         NotEnoughProductError,
         NotEnoughMoneyError,
-        NotEnoughChangeError
+        NotEnoughChangeError,
     ) as e:
-        return HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e))
 
     except Exception as e:
-        return HTTPException(status_code=500, detail="Internal Server Error")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
 
     return res
 
@@ -82,6 +82,6 @@ async def reset_user_deposit(
     try:
         await vending_service.reset_user_deposit(current_user.id)
     except ValueError as e:
-        return HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e))
 
     return {"message": "success"}

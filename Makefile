@@ -34,7 +34,7 @@ run-app:
 	@echo "FastAPI application is running."
 
 test:
-	poetry run pytest
+	PYTHONPATH=. poetry run pytest
 
 clean-db:
 	@echo "Resetting database..."
